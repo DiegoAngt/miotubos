@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 
-vt = Path(__file__).resolve().parent / "vt"
+vt = Path(__file__).resolve().parents[1] / "vt"
 nombre = "00ab5852-6a55a585-2551-49dd-be42-a9371d0c40ea_A3_04_03_Best.png"
 
 with Image.open(vt / "images" / nombre) as archivo:
