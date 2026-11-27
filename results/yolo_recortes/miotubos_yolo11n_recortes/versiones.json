@@ -1,0 +1,6 @@
+{
+  "torch": "2.15.0",
+  "ultralytics": "8.4.219",
+  "dataset": "/Users/diegoangulo/Desktop/miotubos/data/yolo_recortes/20261125_225954_870562/miotubos.yaml",
+  "advertencia": "Anotaciones parciales; validaci\u00f3n provisional."
+}

@@ -2,3 +2,5 @@
 /vt/
 /subset_10GB/
 __pycache__/
+/.venv/
+/data/
