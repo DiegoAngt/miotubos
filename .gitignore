@@ -5,3 +5,4 @@ __pycache__/
 /.venv/
 /data/
 /prev_docx/
+/results/yolo_counts/

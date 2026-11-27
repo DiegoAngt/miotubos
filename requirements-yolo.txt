@@ -1,0 +1,3 @@
+# Instalar primero PyTorch y torchvision con CUDA según el equipo NVIDIA.
+ultralytics==8.4.219
+shapely>=2.0,<3
