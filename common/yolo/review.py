@@ -13,8 +13,8 @@ import numpy as np
 from PIL import Image
 from shapely.geometry import Polygon
 
-from .config import RESULTADOS, VT
-from .yolo_data import leer_lista
+from ..config import RESULTADOS, VT
+from .data import leer_lista
 
 
 def preparar_revision(destino, limite=20, semilla=42):

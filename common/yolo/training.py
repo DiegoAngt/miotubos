@@ -3,8 +3,8 @@
 from pathlib import Path
 import json
 
-from .config import RAIZ, RESULTADOS, SEMILLA
-from .yolo_device import seleccionar_dispositivo
+from ..config import RAIZ, RESULTADOS, SEMILLA
+from .device import seleccionar_dispositivo
 
 
 def entrenar(yaml, nombre, epochs, device=None, *, weights=None, batch=1,

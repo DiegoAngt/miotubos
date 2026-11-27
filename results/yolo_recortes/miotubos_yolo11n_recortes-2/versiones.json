@@ -1,0 +1,13 @@
+{
+  "torch": "2.15.0+cu132",
+  "ultralytics": "8.4.220",
+  "dataset": "/home/daif/Code/ITESM/S7/Reto/miotubos/data/yolo_recortes/20261127_140933_063572/miotubos.yaml",
+  "device": "0",
+  "batch": 32,
+  "amp": true,
+  "cache": "ram",
+  "epochs_solicitadas": 120,
+  "tile": null,
+  "tile_overlap": 0.5,
+  "advertencia": "La validez del conteo depende de anotaciones completas y validaci\u00f3n independiente."
+}

@@ -12,7 +12,7 @@ import shutil
 import numpy as np
 from PIL import Image
 
-from .config import AREA_MAXIMA, RAIZ, RESULTADOS, SEMILLA, VT
+from ..config import AREA_MAXIMA, RAIZ, RESULTADOS, SEMILLA, VT
 
 
 def leer_lista(ruta):
@@ -95,6 +95,8 @@ def preparar_completas():
 
 
 TAMANO = 512
+# Recortes de fondo por imagen fuente, además de los centrados en anotaciones.
+FONDOS = {"train": 4, "val": 1}
 
 
 def fragmentos(geometria):
@@ -194,8 +196,25 @@ def preparar_recortes():
                 (labels / f"{identificador}.txt").write_text("\n".join(lineas)+"\n")
                 registros.append([grupo, nombre, identificador, izquierda, arriba,
                                   TAMANO, len(lineas)])
+            # Recortes sin píxeles anotados: sin ellos el modelo nunca ve un campo
+            # vacío y marca el recorte entero como miotubo durante la predicción.
+            for numero in range(FONDOS[grupo]):
+                for intento in range(100):
+                    arriba = rng.randrange(alto - TAMANO + 1)
+                    izquierda = rng.randrange(ancho - TAMANO + 1)
+                    if not mascara[arriba:arriba+TAMANO, izquierda:izquierda+TAMANO].any():
+                        break
+                else:
+                    continue
+                identificador = f"{indice:04d}_fondo{numero:02d}"
+                foto.crop((izquierda, arriba, izquierda+TAMANO, arriba+TAMANO)).convert("RGB").save(
+                    fotos / f"{identificador}.png")
+                (labels / f"{identificador}.txt").write_text("")
+                registros.append([grupo, nombre, identificador, izquierda, arriba, TAMANO, 0])
         shutil.copy2(particion / f"{grupo}.txt", destino / f"fuentes_{grupo}.txt")
-        print(f"{grupo}: {len(nombres)} imágenes fuente, {len(nombres)*cantidad} recortes", flush=True)
+        fondos = sum(r[0] == grupo and r[6] == 0 for r in registros)
+        print(f"{grupo}: {len(nombres)} imágenes fuente, {len(nombres)*cantidad} recortes "
+              f"con anotaciones y {fondos} de fondo", flush=True)
     with (destino / "recortes.csv").open("w", newline="") as archivo:
         escritor = csv.writer(archivo)
         escritor.writerow(["grupo", "imagen_fuente", "recorte", "x", "y", "tamano", "poligonos_visibles"])
@@ -206,6 +225,7 @@ def preparar_recortes():
     (destino / "protocolo.json").write_text(json.dumps({
         "semilla": SEMILLA, "tamano": TAMANO, "recortes_train_por_imagen": 4,
         "recortes_val_por_imagen": 1, "seleccion": "centrados en píxeles anotados",
+        "recortes_fondo_por_imagen": FONDOS,
         "advertencia": "Validación condicionada a anotaciones parciales; no mide conteo exhaustivo ni desempeño en campo completo.",
         "limite_area_original": AREA_MAXIMA,
         "hash_listas": {k: hashlib.sha256((particion/f"{k}.txt").read_bytes()).hexdigest()

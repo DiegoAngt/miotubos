@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from common.config import RAIZ
-from common.yolo_review import compilar_revision, preparar_revision
+from common.yolo.review import compilar_revision, preparar_revision
 
 
 def main():

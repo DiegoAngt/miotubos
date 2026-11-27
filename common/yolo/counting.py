@@ -125,8 +125,13 @@ def fusionar(detecciones, umbral=0.5):
 
 
 def predecir_instancias(modelo, imagen, *, device, batch=4, tamano=512,
-                       solapamiento=0.5, confianza=0.25, fusion=0.5, area_minima=16):
-    """Recibe BGR uint8. Mantiene solo un lote de recortes en la GPU."""
+                       solapamiento=0.5, confianza=0.25, fusion=0.5, area_minima=16,
+                       area_maxima=0.25):
+    """Recibe BGR uint8. Mantiene solo un lote de recortes en la GPU.
+
+    area_maxima es la fracción del recorte que puede cubrir una máscara: ante
+    texturas que no vio al entrenar, el modelo a veces marca el recorte entero.
+    """
     if batch < 1:
         raise ValueError("batch debe ser positivo.")
     alto, ancho = imagen.shape[:2]
@@ -151,7 +156,7 @@ def predecir_instancias(modelo, imagen, *, device, batch=4, tamano=512,
                 if mascara.shape != (y2-y1, x2-x1):
                     raise ValueError("YOLO devolvió una máscara de tamaño distinto al recorte.")
                 g = geometria_mascara(mascara, x1, y1)
-                if g.area < area_minima or g.is_empty:
+                if g.area < area_minima or g.is_empty or g.area > area_maxima*(x2-x1)*(y2-y1):
                     descartadas += 1
                     continue
                 detecciones.append(Deteccion(g, float(r.boxes.conf[i]), int(r.boxes.cls[i]), numero))

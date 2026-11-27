@@ -7,9 +7,9 @@ Requiere: python -m pip install ultralytics shapely
 import argparse
 from pathlib import Path
 
-from common.yolo_data import preparar_completas, preparar_recortes
-from common.yolo_training import entrenar
-from common.yolo_review import compilar_revision
+from common.yolo.data import preparar_completas, preparar_recortes
+from common.yolo.training import entrenar
+from common.yolo.review import compilar_revision
 
 
 def main():

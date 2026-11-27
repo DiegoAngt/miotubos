@@ -12,13 +12,13 @@ import numpy as np
 from PIL import Image
 from shapely.geometry import Polygon, box
 
-from common.yolo_counting import (
+from common.yolo.counting import (
     Deteccion, exportar_instancias, fusionar, geometria_mascara,
     mascara_local, predecir_instancias, ventanas,
 )
-from common.yolo_device import seleccionar_dispositivo
-from common.yolo_review import compilar_revision
-from evaluate_yolo_counts import evaluar
+from common.yolo.device import seleccionar_dispositivo
+from common.yolo.review import compilar_revision
+from common.yolo.evaluation import evaluar
 
 
 class RecortesTest(unittest.TestCase):
@@ -209,7 +209,7 @@ class RevisionTest(unittest.TestCase):
 class EntrenamientoTest(unittest.TestCase):
     def test_cuda_lotes_cache_y_recortes_llegan_a_train_y_val(self):
         from types import SimpleNamespace
-        from common import yolo_training
+        from common.yolo import training as yolo_training
         llamadas=[]
         class Modelo:
             def __init__(self,weights):

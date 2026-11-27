@@ -32,8 +32,14 @@ common/            lo que es igual para todos los modelos
   config.py          rutas, semilla, tamaño de recorte, épocas
   data.py            revisión de etiquetas, división train/val, recortes
   training.py        pérdida, evaluación y ciclo de entrenamiento
-  yolo_data.py       preparación de imágenes completas y recortes para YOLO
-  yolo_training.py   entrenamiento y validación de YOLO
+  yolo/              todo lo específico de YOLO
+    data.py            preparación de imágenes completas y recortes
+    training.py        entrenamiento y validación
+    counting.py        recortes superpuestos, fusión de máscaras y exportación
+    prediction.py      conteo sobre una carpeta de imágenes, con reanudación
+    review.py          lotes de anotaciones revisadas
+    evaluation.py      error de conteo contra conteos manuales
+    device.py          selección de CUDA, MPS o CPU
 exploration/       scripts sueltos: explore.py (ver una imagen) y baseline.py (Otsu)
 results/           una carpeta por modelo
 data/              datasets YOLO generados (no se sube a git)
@@ -52,13 +58,23 @@ previa del script; solo conserva los pesos y la división.
 Dos pruebas de segmentación de instancias conservan las listas `train.txt` y
 `val.txt` de `results/unet/`: `yolo` usa imágenes completas a 640 y
 `yolo_recortes` usa cuatro recortes nativos de 512 por imagen de entrenamiento
-y uno fijo por imagen de validación. Las imágenes fuente no se mezclan entre
+y uno fijo por imagen de validación, centrados en anotaciones, más cuatro
+recortes de fondo (sin píxeles anotados) por imagen de entrenamiento y uno por
+imagen de validación. Sin los de fondo, el modelo nunca ve un campo vacío y
+marca recortes enteros como miotubo al predecir. Las imágenes fuente no se mezclan entre
 entrenamiento y validación.
 
 ```bash
 python -m pip install ultralytics shapely
 python train_yolo.py yolo --epochs 10
 python train_yolo.py yolo_recortes --epochs 10
+```
+
+En una GPU NVIDIA conviene un lote grande y más épocas; con parada temprana
+tarda unos minutos:
+
+```bash
+python train_yolo.py yolo_recortes --epochs 150 --device 0 --batch 32 --workers 8 --cache ram --patience 40
 ```
 
 Se puede añadir `--device cpu`, `--device mps`, `--device 0` (NVIDIA) o `--solo-preparar`.
@@ -172,6 +188,11 @@ de la máscara menor (`--merge-ios`). Cada grupo admite como máximo una predicc
 por recorte para evitar colapsar dos instancias que ese recorte ya distinguió.
 La fusión sigue siendo una heurística: puede unir miotubos distintos o dejar un
 miotubo largo fragmentado. Hay que revisar los resultados, especialmente en cruces.
+
+Las máscaras que cubren más del 25 % de un recorte se descartan (`--max-area`):
+ante texturas que no vio al entrenar, el modelo puede marcar el recorte entero
+como un miotubo. En los recortes de entrenamiento, el 99 % de los polígonos queda
+por debajo de ese tamaño.
 
 El umbral inicial `--conf 0.25` filtra candidatos de baja confianza. Bajar el umbral
 produce más candidatos y puede aumentar falsos positivos; elígelo con la validación
